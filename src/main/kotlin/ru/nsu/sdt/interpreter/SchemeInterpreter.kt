@@ -7,20 +7,10 @@ import org.objectweb.asm.ClassWriter.*
 import org.objectweb.asm.Opcodes.*
 import ru.nsu.sdt.antlr.SchemeLexer
 import ru.nsu.sdt.antlr.SchemeParser
-import java.io.IOException
 
 import java.io.FileOutputStream
 
-fun main() {
-    interpret("""
-(define (factorial x)
-  (if (< x 2)
-    1
-    (* x (factorial (- x 1)))))
-    """.trimIndent())
-}
-
-const val generatedClassName = "SchemeGenerated"
+const val generatedClassName = "ru/nsu/sdt/interpreter/SchemeGenerated"
 
 fun interpret(code: String) {
     val parser = createParser(code)
@@ -28,10 +18,8 @@ fun interpret(code: String) {
     val classWriter = createClassWriter()
     SchemeVisitor(classWriter).visit(parseTree)
     classWriter.visitEnd()
-    try {
-        FileOutputStream("$generatedClassName.class").use { fos -> fos.write(classWriter.toByteArray()) }
-    } catch (e: IOException) {
-        System.err.println(e.message)
+    FileOutputStream("build/classes/kotlin/main/$generatedClassName.class").use {
+            fos -> fos.write(classWriter.toByteArray())
     }
 }
 
@@ -41,5 +29,5 @@ fun createParser(code: String): SchemeParser {
 }
 
 fun createClassWriter() = ClassWriter(COMPUTE_FRAMES or COMPUTE_MAXS).apply {
-    visit(V11, ACC_PUBLIC or ACC_SUPER, generatedClassName, null, "java/lang/Object", null)
+    visit(V1_8, ACC_PUBLIC or ACC_SUPER, generatedClassName, null, "java/lang/Object", null)
 }
